@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -19,13 +20,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val systemDark = isSystemInDarkTheme()
+            var isDarkTheme by remember { mutableStateOf(systemDark) }
 
-            Pzz6Theme() {
+            Pzz6Theme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PracticeScreen()
+                    PracticeScreen(
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = { isDarkTheme = it }
+                    )
                 }
             }
         }
@@ -33,7 +39,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun PracticeScreen() {
+fun PracticeScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: (Boolean) -> Unit
+) {
     // Уроки 6, 9, 10: State, remember и mutableStateOf
     var counter by remember { mutableIntStateOf(0) }
     var userText by remember { mutableStateOf("") }
@@ -51,6 +60,31 @@ fun PracticeScreen() {
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
         )
+
+        // Переключение светлой и тёмной темы
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = if (isDarkTheme) "Тёмная тема" else "Светлая тема",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = onToggleTheme
+                )
+            }
+        }
 
         // Уроки 6, 8, 9, 10: State + Recomposition + remember
         ClickCounterCard(
@@ -147,12 +181,22 @@ fun ClickCounterCard(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Light Theme")
 @Composable
-fun PracticeScreenPreview() {
-    Pzz6Theme() {
+fun LightPreview() {
+    Pzz6Theme(darkTheme = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            PracticeScreen()
+            PracticeScreen(isDarkTheme = false, onToggleTheme = {})
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Dark Theme")
+@Composable
+fun DarkPreview() {
+    Pzz6Theme(darkTheme = true) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            PracticeScreen(isDarkTheme = true, onToggleTheme = {})
         }
     }
 }
